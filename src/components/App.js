@@ -1,5 +1,6 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import { ReactNode } from "react";
+import { openai } from 'openai';
 import {
   Box,
   Flex,
@@ -25,8 +26,7 @@ import { HamburgerIcon, CloseIcon } from "@chakra-ui/icons";
 
 const Links = ["Home","App"];
 
-
-const NavLink = ({ children }: { children: ReactNode }) => (
+const NavLink = ({ children }) => (
   <Link
     px={2}
     py={1}
@@ -43,9 +43,39 @@ const NavLink = ({ children }: { children: ReactNode }) => (
 
 
 
-export default function Simple() {
+export default function App() {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [isLoaded, setIsLoaded] = useState(false)
+const [isLoaded, setIsLoaded] = useState(false);
+const [response, setResponse] = useState('');
+const [prompt, setPrompt] = useState('');
+
+useEffect(() => {
+  const apiKey = "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";
+  const prompt = "Tell me something positive.";
+
+  fetch("https://api.openai.com/v1/engines/davinci-codex/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      prompt: prompt,
+      max_tokens: 100,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      setResponse(data.choices[0].text);
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+    });
+
+  return () => {
+    // cleanup
+  };
+}, [response]);
   
   return (
     <>
@@ -142,7 +172,7 @@ export default function Simple() {
         fadeDuration={1}
         borderRadius={10}
       >
-        <Box p={5}>Awesome Text!</Box>
+        <Box p={5}>{response}</Box>
       </Skeleton>
       </Box>
       </Box>
